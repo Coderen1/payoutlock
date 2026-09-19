@@ -1,0 +1,10 @@
+/* Utilities used only by the dev gallery, generated separately so they never reach the production CSS
+ * (this file is imported by Gallery.tsx, which is itself removed from production builds).
+ * Same tokens, no base styles: those come from globals.css. */
+@layer theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "../styles/tokens.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities) source(none);
+
+@source "./";

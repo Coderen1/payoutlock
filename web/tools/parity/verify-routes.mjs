@@ -42,6 +42,13 @@ for (const [path, h1, extra] of [
   await ctx.close();
 }
 {
+  // The component gallery is development-only: in a production build /_kit must simply not exist.
+  const { ctx, page } = await open("/_kit");
+  check((await page.$eval("h1", (e) => e.textContent)) === "Page not found", "/_kit                 dev-only gallery is not part of the production build");
+  check(!(await page.content()).includes("PayoutLock UI kit"), "/_kit                 gallery content absent");
+  await ctx.close();
+}
+{
   const { ctx, page, errors } = await open("/developer");
   check((await page.$eval("header h1", (e) => e.textContent)) === "PayoutLock", "/developer            legacy console renders (header h1 = PayoutLock)");
   check(await page.$eval("body", (b) => b.classList.contains("dev-console-body")), "/developer            body has dev-console-body");

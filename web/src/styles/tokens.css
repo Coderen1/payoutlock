@@ -10,7 +10,9 @@
  * >= 4.5:1, UI boundaries >= 3:1. Notes sit beside the values that need care.
  */
 
-@theme {
+/* `static`: emit every token even when no utility class references it — components read a few
+ * of them through var(--color-…) in inline styles, and the gallery lists them all. */
+@theme static {
   /* Only PayoutLock colors exist — Tailwind's default palette is removed so an
      off-system color can't be reached for by accident. */
   --color-*: initial;
@@ -24,12 +26,14 @@
 
   /* Ink */
   --color-ink-900: #0b1220; /* primary text, primary button — 18.7:1 on surface */
+  --color-ink-800: #1b2740; /* primary button hover */
   --color-ink-600: #4b5565; /* secondary text — 7.5:1 on surface, 6.4:1 on sunken */
   --color-ink-500: #5f6b7e; /* smallest text tone — 4.6:1 on canvas/surface/sunken. Nothing lighter is used for text. */
 
   /* Lines */
   --color-line: rgb(11 18 32 / 0.08); /* hairline dividers and card borders (decorative) */
   --color-line-strong: #858fa3; /* input outlines — 3.25:1 on surface (WCAG 1.4.11) */
+  --color-line-medium: rgb(11 18 32 / 0.16); /* button and menu borders (the label carries the meaning) */
 
   /* Dark "night" chapters */
   --color-night-950: #070b14;
@@ -107,6 +111,29 @@
   /* Motion */
   --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
 
+  --animate-shimmer: shimmer 1.8s ease-in-out infinite; /* skeletons */
+  --animate-pop: pop 0.28s var(--ease-out-expo); /* a check landing */
+  --animate-pop-in: pop-in 0.16s var(--ease-out-expo); /* menus opening */
+  --animate-draw: draw 0.55s var(--ease-out-expo) both; /* SVG paths drawing themselves (pathLength=1) */
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  @keyframes pop {
+    0% { transform: scale(0.6); opacity: 0; }
+    60% { transform: scale(1.08); opacity: 1; }
+    100% { transform: scale(1); }
+  }
+  @keyframes pop-in {
+    from { opacity: 0; transform: translateY(4px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes draw {
+    from { stroke-dashoffset: 1; }
+    to { stroke-dashoffset: 0; }
+  }
+
   /* Breakpoints: Tailwind's defaults (640 / 768 / 1024 / 1280 / 1536) plus a
      480 step. 360 is the smallest supported width — not a breakpoint. */
   --breakpoint-xs: 30rem;
@@ -132,6 +159,10 @@
   --border: var(--color-line);
   --input: var(--color-line-strong);
   --ring: var(--color-sapphire-600);
+  --subtle: var(--color-ink-500); /* smallest text tone */
+  --primary-hover: var(--color-ink-800);
+  --border-strong: var(--color-line-medium);
+  --surface-hover: rgb(11 18 32 / 0.06);
 
   /* Decorative only (glow, ring, meter). Text on the light end would fail contrast. */
   --gradient-seal: linear-gradient(135deg, var(--color-seal-500), var(--color-seal-400));
@@ -160,4 +191,8 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-subtle: var(--subtle);
+  --color-primary-hover: var(--primary-hover);
+  --color-border-strong: var(--border-strong);
+  --color-surface-hover: var(--surface-hover);
 }

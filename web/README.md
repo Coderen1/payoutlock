@@ -16,6 +16,7 @@ npm run lint     # oxlint
 | `/app`, `/app/cash-out/:reference` | Protected Cash Out — the real product flow |
 | `/app/demo`, `/app/demo/:reference` | Hackathon demo scenarios (simulated fiat outcomes), kept apart from the product flow |
 | `/developer` | The original engineering/test console, unchanged |
+| `/_kit` | Component gallery — **development only**, not part of the production build |
 
 `/`, `/app*` and `/developer` are separate lazy chunks (`src/AppRoutes.tsx`). The Stellar SDK and Wallets Kit
 (~1 MB) load only on the routes that need them — never on the marketing site.
@@ -28,7 +29,9 @@ npm run lint     # oxlint
 ```
 src/
   styles/     design tokens (tokens.css), scoped base (base.css), entry (globals.css)
-  ui/         design-system building blocks (cn, PLRoot, TestnetPill, useDocumentMeta)
+  ui/         design-system components (Button, Input, Card, Badge, Timeline, WalletChip, HashChip, Notice, ...)
+    motion/   motion primitives (Reveal, Stagger, Crossfade, Breathe, AnimatedNumber) — load lazily via MotionProvider
+  gallery/    the dev-only component gallery at /_kit (own stylesheet, never in the production CSS)
   routes/     redesigned routes (placeholders until each one is built)
   developer/  the engineering console (DeveloperConsole.tsx + its stylesheet)
   components/ hooks/ lib/   console components and the chain/anchor/wallet logic — shared, not restyled

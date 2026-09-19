@@ -15,6 +15,33 @@ body:has([data-pl]) {
   background: var(--background);
 }
 
+/* Night chapters. The semantic tokens flip inside [data-tone="night"], so every component built on them
+ * (cards, buttons, badges, text, borders) re-themes itself without a dark variant of its own. */
+[data-tone="night"] {
+  color-scheme: dark;
+  --background: var(--color-night-950);
+  --foreground: var(--color-night-fg);
+  --card: var(--color-night-800);
+  --card-foreground: var(--color-night-fg);
+  --popover: var(--color-night-800);
+  --popover-foreground: var(--color-night-fg);
+  --primary: var(--color-night-fg);
+  --primary-foreground: var(--color-night-950);
+  --primary-hover: var(--color-white);
+  --secondary: var(--color-night-800);
+  --secondary-foreground: var(--color-night-fg);
+  --muted: rgb(255 255 255 / 0.06);
+  --muted-foreground: var(--color-night-muted);
+  --subtle: var(--color-night-subtle);
+  --border: var(--color-night-line);
+  --border-strong: rgb(255 255 255 / 0.22);
+  --input: rgb(255 255 255 / 0.38);
+  --ring: #4d86ff;
+  --surface-hover: rgb(255 255 255 / 0.08);
+  background: var(--background);
+  color: var(--foreground);
+}
+
 [data-pl] {
   min-height: 100svh;
   background: var(--background);

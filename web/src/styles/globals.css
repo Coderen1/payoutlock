@@ -16,3 +16,7 @@
 @import "./tokens.css" layer(theme);
 @import "./base.css" layer(base);
 @import "tailwindcss/utilities.css" layer(utilities);
+
+/* The dev-only component gallery has its own stylesheet (gallery/gallery.css). Without this, Tailwind would
+ * scan the gallery's files too and ship its one-off utilities in the production CSS. */
+@source not "../gallery";
