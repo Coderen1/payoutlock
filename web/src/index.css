@@ -1,0 +1,52 @@
+/* Functional MVP styling only — no visual polish pass yet, per instruction. */
+body {
+  font-family: system-ui, sans-serif;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+  color: #1a1a1a;
+}
+header { margin-bottom: 24px; }
+.tagline { color: #555; margin-top: -8px; }
+.connect-bar { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+.pill, .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; background: #eee; font-size: 12px; }
+.badge { background: #333; color: #fff; margin-bottom: 8px; }
+.tabs { display: flex; gap: 8px; margin: 16px 0; }
+.tabs button.active { font-weight: bold; text-decoration: underline; }
+.card { border: 1px solid #ccc; border-radius: 6px; padding: 16px; margin: 12px 0; }
+.flow { border-top: 2px solid #333; padding-top: 12px; margin-top: 16px; }
+.row { margin: 10px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.fact-list { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin: 8px 0; }
+.fact-list dt { color: #555; }
+.fact-list dd { margin: 0; }
+.state-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.state-pill { padding: 3px 10px; border-radius: 12px; background: #ddd; font-weight: 600; }
+.muted { color: #777; font-size: 14px; }
+.error-banner { background: #ffe6e6; border: 1px solid #cc0000; padding: 8px; border-radius: 4px; margin: 8px 0; }
+.success-banner { background: #e6ffe6; border: 1px solid #007700; padding: 8px; border-radius: 4px; margin: 8px 0; }
+.tech-notes { margin-top: 32px; font-size: 14px; color: #444; }
+button { cursor: pointer; padding: 6px 12px; }
+button:disabled { cursor: not-allowed; opacity: 0.6; }
+
+.final-state-card {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  border-width: 2px;
+  border-style: solid;
+}
+.final-state-success { background: #eaffea; border-color: #1a8a1a; }
+.final-state-muted { background: #f2f2f2; border-color: #999; }
+.final-state-check {
+  font-size: 28px;
+  line-height: 1;
+  font-weight: bold;
+  color: #1a8a1a;
+}
+.final-state-muted .final-state-check { color: #777; }
+.final-state-heading { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.proof-links { margin-top: 8px; font-size: 13px; }
+.readiness-gate { flex: 1 1 100%; }

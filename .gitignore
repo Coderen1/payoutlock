@@ -1,0 +1,13 @@
+# Rust / Soroban contract
+contract/target/
+contract/test_snapshots/
+
+# Node (attestor / scripts / web, added in later phases)
+node_modules/
+dist/
+.env
+*.env.local
+.watcher-cursor.json
+
+# OS
+.DS_Store

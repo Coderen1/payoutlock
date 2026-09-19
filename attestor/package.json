@@ -1,0 +1,21 @@
+{
+  "name": "payoutlock-attestor",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "encoding-fixture": "node --experimental-strip-types src/scripts/encodingFixture.ts",
+    "happy-path": "node --experimental-strip-types src/scripts/happyPath.ts",
+    "probe-anchor": "node --experimental-strip-types src/scripts/probeAnchor.ts",
+    "demo-setup": "DEMO_MODE=true node --experimental-strip-types src/scripts/demoSetup.ts",
+    "scenario-failure-claim": "DEMO_MODE=true node --experimental-strip-types src/scripts/scenarioFailureClaim.ts",
+    "scenario-refund": "DEMO_MODE=true node --experimental-strip-types src/scripts/scenarioRefund.ts",
+    "server": "node --experimental-strip-types src/server/index.ts",
+    "server:demo": "DEMO_MODE=true node --experimental-strip-types src/server/index.ts"
+  },
+  "dependencies": {
+    "@stellar/stellar-sdk": "^17.1.0",
+    "dotenv": "^16.4.5",
+    "express": "^5.2.1"
+  }
+}
