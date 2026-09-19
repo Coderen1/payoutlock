@@ -19,10 +19,16 @@ export default function AppRoutes() {
     <Suspense fallback={null}>
       <Routes>
         <Route path="/" element={<MarketingRoute />} />
-        <Route path="/app" element={<CashOutRoute />} />
-        <Route path="/app/cash-out/:reference" element={<CashOutRoute />} />
-        <Route path="/app/demo" element={<DemoRoute />} />
-        <Route path="/app/demo/:reference" element={<DemoRoute />} />
+        {/* One element per section, with the reference as a child route: moving from compose to tracking must not
+            remount the flow, or what the browser holds in memory (the anchor sign-in, receipts) would be lost. */}
+        <Route path="/app" element={<CashOutRoute />}>
+          <Route index element={null} />
+          <Route path="cash-out/:reference" element={null} />
+        </Route>
+        <Route path="/app/demo" element={<DemoRoute />}>
+          <Route index element={null} />
+          <Route path=":reference" element={null} />
+        </Route>
         <Route path="/developer/*" element={<DeveloperConsole />} />
         {Gallery && <Route path="/_kit" element={<Gallery />} />}
         <Route path="*" element={<NotFoundRoute />} />

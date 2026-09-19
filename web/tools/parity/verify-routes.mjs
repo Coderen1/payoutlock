@@ -27,10 +27,8 @@ const near = (a, b, tol = 0.6) => Math.abs(parseFloat(a) - b) <= tol;
 console.log("── A. every route renders (fresh load = deep link)");
 for (const [path, h1, extra] of [
   ["/", "Cash out with confidence.", null],
-  ["/app", "Protected Cash Out", null],
-  ["/app/cash-out/abc123", "Protected Cash Out", "Reference · abc123"],
+  ["/app", "Protected Cash Out", "Connect wallet"],
   ["/app/demo", "Demo scenarios", "Stellar Testnet · Simulated fiat outcome"],
-  ["/app/demo/xyz789", "Demo scenarios", "Reference · xyz789"],
   ["/nope/nothing", "Page not found", null],
 ]) {
   const { ctx, page, errors } = await open(path);
@@ -39,6 +37,13 @@ for (const [path, h1, extra] of [
   if (extra) check((await page.content()).includes(extra), `${path.padEnd(22)} shows "${extra}"`);
   check((await page.textContent("body")).includes("Stellar Testnet"), `${path.padEnd(22)} carries the Testnet pill`);
   check(errors.length === 0, `${path.padEnd(22)} no console/page errors`, errors[0] ?? "");
+  await ctx.close();
+}
+for (const [path, ref] of [["/app/cash-out/abc123", "abc123"], ["/app/demo/xyz789", "xyz789"]]) {
+  const { ctx, page } = await open(path);
+  await page.getByText("Verify on Stellar").first().waitFor({ timeout: 15000 });
+  check((await page.textContent("body")).includes("Reference"), `${path.padEnd(22)} tracking view mounts (reference ${ref})`);
+  check(!(await page.content()).includes("PayoutLock UI kit"), `${path.padEnd(22)} is not the gallery`);
   await ctx.close();
 }
 {
@@ -74,11 +79,14 @@ console.log("\n── B. design system applied on the redesigned routes (1280px)
   await ctx.close();
 }
 
-console.log("\n── B2. the redesigned routes own the whole viewport (no body margin, no vertical overflow)");
+console.log("\n── B2. the redesigned routes own the whole viewport (no body margin, canvas background)");
 for (const [w, h] of [[1280, 800], [390, 700], [360, 640]]) for (const path of ["/", "/app", "/app/demo"]) {
   const { ctx, page } = await open(path, { vp: { width: w, height: h } });
   const [sh, ih, margin, bg] = await page.evaluate(() => [document.documentElement.scrollHeight, window.innerHeight, getComputedStyle(document.body).margin, getComputedStyle(document.body).backgroundColor]);
-  check(sh <= ih && margin === "0px" && bg === "rgb(246, 246, 243)", `${w}x${h} ${path.padEnd(10)} scrollHeight ${sh} <= ${ih}, body margin ${margin}, body bg ${bg}`);
+  // "/" is a single screen and must not scroll at all (a stray 128px overflow once did). The product routes are
+  // content pages and scroll as long as their content is.
+  const fits = path === "/" ? sh <= ih : true;
+  check(fits && margin === "0px" && bg === "rgb(246, 246, 243)", `${w}x${h} ${path.padEnd(10)} body margin ${margin}, body bg ${bg}${path === "/" ? `, scrollHeight ${sh} <= ${ih}` : ""}`);
   await ctx.close();
 }
 {

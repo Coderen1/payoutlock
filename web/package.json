@@ -12,7 +12,9 @@
     "parity:baseline": "node tools/parity/run.mjs baseline",
     "parity:check": "node tools/parity/run.mjs check",
     "parity:routes": "node tools/parity/run.mjs routes",
-    "gallery:shots": "node tools/gallery/shots.mjs"
+    "gallery:shots": "node tools/gallery/shots.mjs",
+    "flows": "node tools/flows/run.mjs",
+    "test": "tsc -p tsconfig.test.json && node --experimental-strip-types --test src/features/cashout/*.test.ts"
   },
   "dependencies": {
     "@creit.tech/stellar-wallets-kit": "^2.6.0",

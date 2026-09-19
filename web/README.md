@@ -6,6 +6,9 @@ React 19 + TypeScript + Vite + Tailwind CSS v4. Runs on **Stellar Testnet** agai
 npm run dev      # http://localhost:5173  (API: VITE_API_URL, default http://localhost:8787)
 npm run build    # tsc -b && vite build
 npm run lint     # oxlint
+npm test         # unit tests for the cash-out view logic (src/features/cashout/*.test.ts)
+npm run flows    # browser flow tests of /app and /app/demo against a simulated chain/anchor (tools/flows)
+npm run parity   # /developer identity + pixel/computed-style parity + route checks (tools/parity)
 ```
 
 ## Routes
@@ -32,7 +35,9 @@ src/
   ui/         design-system components (Button, Input, Card, Badge, Timeline, WalletChip, HashChip, Notice, ...)
     motion/   motion primitives (Reveal, Stagger, Crossfade, Breathe, AnimatedNumber) — load lazily via MotionProvider
   gallery/    the dev-only component gallery at /_kit (own stylesheet, never in the production CSS)
-  routes/     redesigned routes (placeholders until each one is built)
+  features/cashout/  the /app and /app/demo product flow: pure view logic (view.ts), one hook (useCashOutFlow.ts)
+                     over lib/ + hooks/, and the screens (Compose.tsx, Tracking.tsx, CashOutApp.tsx)
+  routes/     route entry points (the marketing route is still a placeholder)
   developer/  the engineering console (DeveloperConsole.tsx + its stylesheet)
   components/ hooks/ lib/   console components and the chain/anchor/wallet logic — shared, not restyled
 ```
@@ -59,3 +64,28 @@ Keep it that way: no global element selectors outside those two scopes.
 Tailwind's default palette is removed, so only PayoutLock colors exist. Text/background pairs are WCAG-AA checked
 (4.5:1 text, 3:1 UI boundaries) — re-check when a color changes. The `seal` gradient is decorative and marks
 active protection only.
+
+## Protected Cash Out (`/app`, `/app/demo`)
+
+`features/cashout/` holds both routes; `CashOutApp` takes a `mode` (`live` | `demo`) and nothing else differs except
+the scenario chooser and the permanent "Stellar Testnet · Simulated fiat outcome" ribbon in the demo.
+
+- **View logic is pure.** `view.ts` turns the on-chain record plus what the browser knows (funding check, anchor status,
+  sign-in) into a status, timeline, one primary action and notices. It has no React and is unit-tested (`npm test`).
+- **Chain state is the source of truth.** `useCashOutFlow` reads it through `useProtection`. The backend keeper moves a
+  protection through Grace and Claimable; the UI never sends those transactions. The one on-chain action a person takes
+  is *Claim Protection*, offered only when a fresh read says the state is Claimable.
+- **Nothing sensitive persists.** Session and anchor JWT live in memory only. `localStorage` holds exactly
+  `{ flow, reference }` (`storage.ts`); amounts, deadlines and state are re-read from Stellar.
+- **No implementation terms on screen** (FUNDED, nonce, SAC, advance_to_*, enum names). They stay in `/developer`.
+- **`/app` has no "Simulate…" controls.** Simulated bank outcomes exist only under `/app/demo`, chosen by the reference
+  prefix (`demo_failure_`, `demo_refund_`).
+
+### Flow tests (`npm run flows`)
+
+`tools/flows/` drives real Chrome against the real UI with the wallet, API, anchor and chain modules replaced by a
+simulated world (`world.js`, `stubs.mjs`) — no funds, no network beyond a mocked SEP-38 quote. It walks the live and demo
+flows at 1280×900 and 390×844, asserts the rules above on every screen (no banned terms, no Simulate controls in `/app`,
+ribbon in the demo, Testnet marker on the first screen, keeper transactions never sent by the UI, localStorage contents)
+and writes screenshots to `tools/flows/out/` (git-ignored). It cannot exercise Freighter's own signing prompts; those
+need a manual pass.

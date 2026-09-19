@@ -12,7 +12,7 @@ export function SummaryRow({ label, children, hint, loading, emphasis }: { label
   return (
     <div className="flex items-baseline justify-between gap-6 py-3.5 first:pt-0 last:pb-0">
       <dt className={cn("flex items-center gap-1.5 text-body", emphasis === "protected" ? "font-medium text-seal-700" : "text-muted-foreground")}>
-        {emphasis === "protected" && <ShieldCheck aria-hidden className="size-4" />}
+        {emphasis === "protected" && <ShieldCheck aria-hidden className="size-4 shrink-0" />}
         {label}
       </dt>
       <dd className="text-right text-body font-medium text-foreground tabular-nums">

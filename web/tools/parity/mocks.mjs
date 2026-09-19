@@ -45,6 +45,7 @@ export async function installMocks(page, opts = {}) {
         if (url.pathname === "/api/config") {
           return config === "abort" ? route.abort("failed") : json(route, 200, CONFIG);
         }
+        if (url.pathname === "/api/provider-liquidity") return json(route, 200, { availableStroops: "50000000" });
         if (url.pathname === "/api/demo/failure/open" || url.pathname === "/api/demo/refund/open") {
           return json(route, 200, {
             anchorWithdrawalId: "parity-withdrawal-0001",
@@ -63,6 +64,11 @@ export async function installMocks(page, opts = {}) {
           : json(route, 200, horizonAccount(horizon));
       }
       return json(route, 404, {});
+    }
+    if (host === "tr-mock-anchor.fly.dev" && url.pathname === "/sep38/price") {
+      // The product screens ask the anchor for an indicative quote; answer from a fixture, never the real anchor.
+      const amount = Number(url.searchParams.get("sell_amount") ?? "1");
+      return json(route, 200, { buy_amount: (48.54 * amount).toFixed(2), sell_amount: amount.toFixed(7), fee: { details: [{ description: "50 bps from the USD/TRY mid rate" }] } });
     }
     if (host === "rpc.parity.invalid") {
       const body = req.postDataJSON?.() ?? {};
