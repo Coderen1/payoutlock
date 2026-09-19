@@ -1,14 +1,21 @@
 import { useEffect, useState } from "react";
-import { ConnectBar } from "./components/ConnectBar";
-import { LiveFlow } from "./components/LiveFlow";
-import { DemoFailureFlow } from "./components/DemoFailureFlow";
-import { DemoRefundFlow } from "./components/DemoRefundFlow";
-import { useSession } from "./lib/session";
-import { getAppConfig, type AppConfig } from "./lib/apiConfig";
+import { ConnectBar } from "../components/ConnectBar";
+import { LiveFlow } from "../components/LiveFlow";
+import { DemoFailureFlow } from "../components/DemoFailureFlow";
+import { DemoRefundFlow } from "../components/DemoRefundFlow";
+import { useSession } from "../lib/session";
+import { getAppConfig, type AppConfig } from "../lib/apiConfig";
+import { useDocumentMeta } from "../ui/useDocumentMeta";
+import { useLegacyConsoleBody } from "./useLegacyConsoleBody";
+import { DevConsoleBadge } from "./DevConsoleBadge";
+import "./developer.css";
 
 type Tab = "live" | "demo-failure" | "demo-refund";
 
-export default function App() {
+/** The original engineering/test console, unchanged, now served at /developer. */
+export default function DeveloperConsole() {
+  useLegacyConsoleBody();
+  useDocumentMeta({ title: "PayoutLock · Developer console", noindex: true });
   const session = useSession();
   const [tab, setTab] = useState<Tab>("live");
   const [cfg, setCfg] = useState<AppConfig | null>(null);
@@ -19,6 +26,7 @@ export default function App() {
   }, []);
 
   return (
+    <>
     <div className="app">
       <header>
         <h1>PayoutLock</h1>
@@ -71,5 +79,7 @@ export default function App() {
         <p className="muted">Connect your Testnet wallet (Freighter) to begin.</p>
       )}
     </div>
+    <DevConsoleBadge />
+    </>
   );
 }

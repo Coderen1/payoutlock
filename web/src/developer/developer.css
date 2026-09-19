@@ -1,0 +1,61 @@
+/* Legacy engineering-console stylesheet (moved verbatim from src/index.css).
+ *
+ * Every selector is prefixed with `body.dev-console-body`: the class is added to
+ * <body> only while the /developer route is mounted (useLegacyConsoleBody), so
+ * these bare element selectors (body, button, header, ...) apply to the console
+ * exactly as before and can never reach the redesigned routes. Declarations are
+ * unchanged; generated mechanically from the original file.
+ */
+/* Functional MVP styling only — no visual polish pass yet, per instruction. */
+body.dev-console-body {
+  font-family: system-ui, sans-serif;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+  color: #1a1a1a;
+}
+body.dev-console-body header { margin-bottom: 24px; }
+body.dev-console-body .tagline { color: #555; margin-top: -8px; }
+body.dev-console-body .connect-bar { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+body.dev-console-body .pill,
+body.dev-console-body .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; background: #eee; font-size: 12px; }
+body.dev-console-body .badge { background: #333; color: #fff; margin-bottom: 8px; }
+body.dev-console-body .tabs { display: flex; gap: 8px; margin: 16px 0; }
+body.dev-console-body .tabs button.active { font-weight: bold; text-decoration: underline; }
+body.dev-console-body .card { border: 1px solid #ccc; border-radius: 6px; padding: 16px; margin: 12px 0; }
+body.dev-console-body .flow { border-top: 2px solid #333; padding-top: 12px; margin-top: 16px; }
+body.dev-console-body .row { margin: 10px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+body.dev-console-body .fact-list { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin: 8px 0; }
+body.dev-console-body .fact-list dt { color: #555; }
+body.dev-console-body .fact-list dd { margin: 0; }
+body.dev-console-body .state-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+body.dev-console-body .state-pill { padding: 3px 10px; border-radius: 12px; background: #ddd; font-weight: 600; }
+body.dev-console-body .muted { color: #777; font-size: 14px; }
+body.dev-console-body .error-banner { background: #ffe6e6; border: 1px solid #cc0000; padding: 8px; border-radius: 4px; margin: 8px 0; }
+body.dev-console-body .success-banner { background: #e6ffe6; border: 1px solid #007700; padding: 8px; border-radius: 4px; margin: 8px 0; }
+body.dev-console-body .tech-notes { margin-top: 32px; font-size: 14px; color: #444; }
+body.dev-console-body button { cursor: pointer; padding: 6px 12px; }
+body.dev-console-body button:disabled { cursor: not-allowed; opacity: 0.6; }
+
+body.dev-console-body .final-state-card {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  border-width: 2px;
+  border-style: solid;
+}
+body.dev-console-body .final-state-success { background: #eaffea; border-color: #1a8a1a; }
+body.dev-console-body .final-state-muted { background: #f2f2f2; border-color: #999; }
+body.dev-console-body .final-state-check {
+  font-size: 28px;
+  line-height: 1;
+  font-weight: bold;
+  color: #1a8a1a;
+}
+body.dev-console-body .final-state-muted .final-state-check { color: #777; }
+body.dev-console-body .final-state-heading { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+body.dev-console-body .proof-links { margin-top: 8px; font-size: 13px; }
+body.dev-console-body .readiness-gate { flex: 1 1 100%; }

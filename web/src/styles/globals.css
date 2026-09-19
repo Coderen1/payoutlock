@@ -1,0 +1,18 @@
+/* PayoutLock design system — entry stylesheet.
+ *
+ * Tailwind is loaded piecewise: theme + utilities, WITHOUT its global Preflight.
+ * The engineering console at /developer is intentionally unstyled-by-default
+ * markup that depends on the browser's own defaults, so nothing here may reset
+ * elements document-wide. The redesigned routes get their base styles from
+ * base.css, scoped to [data-pl].
+ *
+ * Everything below is in a cascade layer. The legacy console stylesheet
+ * (developer/developer.css) is deliberately UNlayered and scoped to
+ * body.dev-console-body, so it can only ever win — and only on /developer.
+ */
+@layer theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "./tokens.css" layer(theme);
+@import "./base.css" layer(base);
+@import "tailwindcss/utilities.css" layer(utilities);

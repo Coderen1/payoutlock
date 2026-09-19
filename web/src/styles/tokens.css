@@ -1,0 +1,163 @@
+/* PayoutLock design tokens.
+ *
+ * Raw palette and the type / radius / shadow / motion scales live in @theme, so
+ * each becomes a Tailwind utility (bg-canvas, text-display-m, rounded-card,
+ * shadow-card, ...). Semantic aliases follow, using the shadcn-style names the
+ * restyled primitives will consume — the primitives get OUR values, never
+ * shadcn's default look.
+ *
+ * Contrast (WCAG 2.x, computed): every text/background pair used for copy is
+ * >= 4.5:1, UI boundaries >= 3:1. Notes sit beside the values that need care.
+ */
+
+@theme {
+  /* Only PayoutLock colors exist — Tailwind's default palette is removed so an
+     off-system color can't be reached for by accident. */
+  --color-*: initial;
+
+  --color-white: #ffffff;
+
+  /* Light surfaces */
+  --color-canvas: #f6f6f3; /* page */
+  --color-surface: #ffffff; /* cards, sheets */
+  --color-sunken: #edede8; /* wells, inputs at rest */
+
+  /* Ink */
+  --color-ink-900: #0b1220; /* primary text, primary button — 18.7:1 on surface */
+  --color-ink-600: #4b5565; /* secondary text — 7.5:1 on surface, 6.4:1 on sunken */
+  --color-ink-500: #5f6b7e; /* smallest text tone — 4.6:1 on canvas/surface/sunken. Nothing lighter is used for text. */
+
+  /* Lines */
+  --color-line: rgb(11 18 32 / 0.08); /* hairline dividers and card borders (decorative) */
+  --color-line-strong: #858fa3; /* input outlines — 3.25:1 on surface (WCAG 1.4.11) */
+
+  /* Dark "night" chapters */
+  --color-night-950: #070b14;
+  --color-night-800: #0e1524;
+  --color-night-fg: #eef1f6; /* 17.4:1 on night-950 */
+  --color-night-muted: #9aa4b5; /* 7.8:1 on night-950, 7.3:1 on night-800 */
+  --color-night-subtle: #8592a6; /* 6.2:1 on night-950 */
+  --color-night-line: rgb(255 255 255 / 0.1);
+
+  /* Sapphire — interactive: links, focus ring, progress */
+  --color-sapphire-50: #eaf0ff;
+  --color-sapphire-600: #2451e6; /* 6.2:1 on surface; white on it 6.2:1 */
+  --color-sapphire-700: #1b3fb8; /* text on sapphire-50: 7.5:1 */
+
+  /* Seal — the color of PROTECTION. Glow and gradient appear only where value is
+     protected (active protection, claim). seal-500 takes white text at 5.3:1;
+     seal-400 is a decorative / on-dark tone — never a text color on light. */
+  --color-seal-50: #e4f7f5;
+  --color-seal-400: #22c7b8;
+  --color-seal-500: #2a5fef;
+  --color-seal-700: #0f6b78; /* text on seal-50: 5.6:1 */
+
+  /* Outcome and status. The -600 tones are fills and icons only; text uses -700. */
+  --color-emerald-50: #e8f6f0;
+  --color-emerald-600: #0f8f63;
+  --color-emerald-700: #0b6e4f; /* 5.6:1 on emerald-50 */
+  --color-amber-50: #fff4de;
+  --color-amber-600: #b7791f;
+  --color-amber-700: #8a5a0b; /* 5.4:1 on amber-50 */
+  --color-rose-50: #fdecee; /* rose is reserved for system errors — never for a protection outcome */
+  --color-rose-600: #c23a4b;
+  --color-rose-700: #a62b3c; /* 6.1:1 on rose-50 */
+
+  /* Type */
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --text-display-xl: clamp(2.75rem, 7.2vw, 5.5rem); /* 44 -> 88 */
+  --text-display-xl--line-height: 0.98;
+  --text-display-xl--letter-spacing: -0.035em;
+  --text-display-xl--font-weight: 600;
+  --text-display-l: clamp(2.125rem, 4.6vw, 3.75rem); /* 34 -> 60 */
+  --text-display-l--line-height: 1.03;
+  --text-display-l--letter-spacing: -0.03em;
+  --text-display-l--font-weight: 600;
+  --text-display-m: clamp(1.625rem, 3vw, 2.5rem); /* 26 -> 40 */
+  --text-display-m--line-height: 1.1;
+  --text-display-m--letter-spacing: -0.02em;
+  --text-display-m--font-weight: 600;
+  --text-title: 1.25rem; /* 20 */
+  --text-title--line-height: 1.3;
+  --text-title--letter-spacing: -0.01em;
+  --text-title--font-weight: 600;
+  --text-lead: clamp(1.0625rem, 1.5vw, 1.3125rem); /* 17 -> 21 */
+  --text-lead--line-height: 1.5;
+  --text-body: 1rem; /* 16 */
+  --text-body--line-height: 1.6;
+  --text-caption: 0.8125rem; /* 13 */
+  --text-caption--line-height: 1.45;
+  --text-mono: 0.78125rem; /* 12.5 — hashes, references */
+  --text-mono--line-height: 1.4;
+
+  /* Shape */
+  --radius-control: 0.75rem; /* 12 */
+  --radius-card: 1rem; /* 16 */
+  --radius-frame: 1.5rem; /* 24 — product frames */
+
+  /* Elevation: ink-tinted, layered, soft. */
+  --shadow-*: initial;
+  --shadow-xs: 0 1px 2px rgb(11 18 32 / 0.05);
+  --shadow-card: 0 1px 2px rgb(11 18 32 / 0.04), 0 8px 24px -8px rgb(11 18 32 / 0.08);
+  --shadow-float: 0 2px 4px rgb(11 18 32 / 0.04), 0 16px 40px -12px rgb(11 18 32 / 0.16);
+  --shadow-glow-seal: 0 0 0 1px rgb(42 95 239 / 0.18), 0 8px 40px -8px rgb(34 199 184 / 0.35); /* protection-active only */
+
+  /* Motion */
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Breakpoints: Tailwind's defaults (640 / 768 / 1024 / 1280 / 1536) plus a
+     480 step. 360 is the smallest supported width — not a breakpoint. */
+  --breakpoint-xs: 30rem;
+}
+
+/* Semantic layer — names match what shadcn primitives expect. */
+:root {
+  --background: var(--color-canvas);
+  --foreground: var(--color-ink-900);
+  --card: var(--color-surface);
+  --card-foreground: var(--color-ink-900);
+  --popover: var(--color-surface);
+  --popover-foreground: var(--color-ink-900);
+  --primary: var(--color-ink-900);
+  --primary-foreground: var(--color-white);
+  --secondary: var(--color-sunken);
+  --secondary-foreground: var(--color-ink-900);
+  --muted: var(--color-sunken);
+  --muted-foreground: var(--color-ink-600);
+  --accent: var(--color-sapphire-50);
+  --accent-foreground: var(--color-sapphire-700);
+  --destructive: var(--color-rose-600);
+  --border: var(--color-line);
+  --input: var(--color-line-strong);
+  --ring: var(--color-sapphire-600);
+
+  /* Decorative only (glow, ring, meter). Text on the light end would fail contrast. */
+  --gradient-seal: linear-gradient(135deg, var(--color-seal-500), var(--color-seal-400));
+
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 500ms;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
