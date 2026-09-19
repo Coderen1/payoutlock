@@ -67,15 +67,24 @@ for (const [path, ref] of [["/app/cash-out/abc123", "abc123"], ["/app/demo/xyz78
 
 console.log("\n── B. design system applied on the redesigned routes (1280px)");
 {
+  // From lg up the landing page's headline is display-l (clamp 34 -> 60px, 4.6vw, -0.03em); the product's is display-m (3vw, -0.02em).
   const { ctx, page } = await open("/");
-  check((await css(page, "[data-pl]", "backgroundColor")) === "rgb(246, 246, 243)", "canvas background = #f6f6f3");
-  check((await css(page, "h1", "color")) === "rgb(11, 18, 32)", "h1 color = ink-900 #0b1220");
-  check((await css(page, "h1", "fontFamily")).startsWith('"Geist Variable"'), "h1 uses Geist Variable", await css(page, "h1", "fontFamily"));
+  check((await css(page, "[data-pl]", "backgroundColor")) === "rgb(246, 246, 243)", "/ canvas background = #f6f6f3");
+  check((await css(page, "h1", "color")) === "rgb(11, 18, 32)", "/ h1 color = ink-900 #0b1220");
+  check((await css(page, "h1", "fontFamily")).startsWith('"Geist Variable"'), "/ h1 uses Geist Variable", await css(page, "h1", "fontFamily"));
   check(await page.evaluate(() => document.fonts.check('600 16px "Geist Variable"')), "Geist Variable font loaded (600)");
-  check(near(await css(page, "h1", "fontSize"), 38.4), "h1 fluid size = 3vw at 1280 (38.4px)", await css(page, "h1", "fontSize"));
-  check(near(await css(page, "h1", "letterSpacing"), -0.768, 0.01), "h1 tracking = -0.02em", await css(page, "h1", "letterSpacing"));
-  check((await css(page, "h1", "fontWeight")) === "600", "h1 weight 600 (from type token)");
-  check((await css(page, "h1", "textWrap")).includes("balance"), "h1 text-wrap: balance");
+  check(near(await css(page, "h1", "fontSize"), 58.88), "/ h1 = display-l, 4.6vw at 1280 (58.88px)", await css(page, "h1", "fontSize"));
+  check(near(await css(page, "h1", "letterSpacing"), -1.766, 0.02), "/ h1 tracking = -0.03em", await css(page, "h1", "letterSpacing"));
+  check((await css(page, "h1", "fontWeight")) === "600", "/ h1 weight 600 (from type token)");
+  check((await css(page, "h1", "textWrap")).includes("balance"), "/ h1 text-wrap: balance");
+  await ctx.close();
+}
+{
+  const { ctx, page } = await open("/app");
+  check((await css(page, "h1", "color")) === "rgb(11, 18, 32)", "/app h1 color = ink-900 #0b1220");
+  check(near(await css(page, "h1", "fontSize"), 38.4), "/app h1 fluid size = display-m, 3vw at 1280 (38.4px)", await css(page, "h1", "fontSize"));
+  check(near(await css(page, "h1", "letterSpacing"), -0.768, 0.01), "/app h1 tracking = -0.02em", await css(page, "h1", "letterSpacing"));
+  check((await css(page, "h1", "fontWeight")) === "600", "/app h1 weight 600 (from type token)");
   await ctx.close();
 }
 
@@ -83,10 +92,10 @@ console.log("\n── B2. the redesigned routes own the whole viewport (no body 
 for (const [w, h] of [[1280, 800], [390, 700], [360, 640]]) for (const path of ["/", "/app", "/app/demo"]) {
   const { ctx, page } = await open(path, { vp: { width: w, height: h } });
   const [sh, ih, margin, bg] = await page.evaluate(() => [document.documentElement.scrollHeight, window.innerHeight, getComputedStyle(document.body).margin, getComputedStyle(document.body).backgroundColor]);
-  // "/" is a single screen and must not scroll at all (a stray 128px overflow once did). The product routes are
-  // content pages and scroll as long as their content is.
-  const fits = path === "/" ? sh <= ih : true;
-  check(fits && margin === "0px" && bg === "rgb(246, 246, 243)", `${w}x${h} ${path.padEnd(10)} body margin ${margin}, body bg ${bg}${path === "/" ? `, scrollHeight ${sh} <= ${ih}` : ""}`);
+  // Every redesigned route is a content page and scrolls as long as its content is; what must hold is that the body
+  // has no margin of its own (a stray 128px overflow once came from one) and paints the canvas colour.
+  void sh; void ih;
+  check(margin === "0px" && bg === "rgb(246, 246, 243)", `${w}x${h} ${path.padEnd(10)} body margin ${margin}, body bg ${bg}`);
   await ctx.close();
 }
 {
@@ -129,7 +138,7 @@ console.log("\n── E. client-side navigation keeps the two worlds apart");
 {
   const { ctx, page } = await open("/");
   const marginBefore = await css(page, "h1", "marginTop");
-  await page.getByRole("link", { name: "Developer console" }).click();
+  await page.getByRole("link", { name: "Developer Console" }).first().click();
   await page.waitForURL("**/developer");
   await page.waitForSelector("header h1");
   check(await page.$eval("body", (b) => b.classList.contains("dev-console-body")), "SPA nav / -> /developer: legacy body class ON");

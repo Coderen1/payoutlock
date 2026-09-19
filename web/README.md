@@ -8,6 +8,8 @@ npm run build    # tsc -b && vite build
 npm run lint     # oxlint
 npm test         # unit tests for the cash-out view logic (src/features/cashout/*.test.ts)
 npm run flows    # browser flow tests of /app and /app/demo against a simulated chain/anchor (tools/flows)
+npm run landing  # browser tests of the landing page: claims, links, layout, motion, keyboard, contrast (tools/landing)
+npm run proof:verify  # re-checks the real Testnet records shown on the landing page against Horizon
 npm run parity   # /developer identity + pixel/computed-style parity + route checks (tools/parity)
 ```
 
@@ -15,7 +17,7 @@ npm run parity   # /developer identity + pixel/computed-style parity + route che
 
 | Route | What it is |
 |---|---|
-| `/` | Public marketing site |
+| `/` | Public landing page: the story, who it is for, real proof, and the developers' section |
 | `/app`, `/app/cash-out/:reference` | Protected Cash Out — the real product flow |
 | `/app/demo`, `/app/demo/:reference` | Hackathon demo scenarios (simulated fiat outcomes), kept apart from the product flow |
 | `/developer` | The original engineering/test console, unchanged |
@@ -37,7 +39,9 @@ src/
   gallery/    the dev-only component gallery at /_kit (own stylesheet, never in the production CSS)
   features/cashout/  the /app and /app/demo product flow: pure view logic (view.ts), one hook (useCashOutFlow.ts)
                      over lib/ + hooks/, and the screens (Compose.tsx, Tracking.tsx, CashOutApp.tsx)
-  routes/     route entry points (the marketing route is still a placeholder)
+  features/landing/  the public landing page: copy.ts (every word), proof.ts (real Testnet records), the settlement
+                     line (SettlementLine.tsx + landing.css), the pinned scene's script (timeline.ts) and sections/
+  routes/     route entry points
   developer/  the engineering console (DeveloperConsole.tsx + its stylesheet)
   components/ hooks/ lib/   console components and the chain/anchor/wallet logic — shared, not restyled
 ```
@@ -89,3 +93,34 @@ flows at 1280×900 and 390×844, asserts the rules above on every screen (no ban
 ribbon in the demo, Testnet marker on the first screen, keeper transactions never sent by the UI, localStorage contents)
 and writes screenshots to `tools/flows/out/` (git-ignored). It cannot exercise Freighter's own signing prompts; those
 need a manual pass.
+
+## Landing page (`/`)
+
+`features/landing/`. It never touches the wallet, the API or the Stellar SDK — everything on it is static — so the
+first load stays small (see `npm run parity` for the numbers).
+
+- **All copy is in `copy.ts`.** Components choose layout and motion; they don't write sentences. Two registers: the
+  sections for everyone use no infrastructure words (collateral, attestor, Soroban, ...); only `verify` and
+  `developers` (marked `data-technical`) may. `integrity.ts` holds the patterns for what the page must never say
+  (insured, guaranteed, trustless, Mainnet, percentages, prices, user or volume figures) and both the unit tests and the
+  browser test check against them. The provider role is called a *protection provider*; "Guarantee Provider" stays in
+  `/developer` and the technical docs.
+- **The settlement line** is one anatomy (chain, gap, end, protection band) driven by three numbers, `--chain`,
+  `--gp`, `--band` (`landing.css`). The settlement-gap section (`GapSection.tsx`) is one dark panel on the warm page: on a
+  wide window tall enough to hold it, it pins for half a screen of scrolling while the line draws (`scroll.ts` writes one
+  number, `--p`, and CSS does the rest — no re-renders, no scroll hijacking); otherwise it scrolls normally and the line
+  draws as it passes; with reduced motion it is finished. Its script is data (`timeline.ts`) and is unit-tested. The
+  claim path it shows is the accurate one: a claim only after the deadline passes with nothing returned.
+- **The product section** (`ProductSection.tsx`, `ProductStage.tsx`) is one product surface in the hero's visual family,
+  built from the app's components, playing three paths — payout arrives, payout doesn't arrive, principal returned (the
+  last labelled a simulated outcome in the Testnet demo). `PayoutCard.tsx` is the bank-payout card shared with the hero.
+- **The proof section shows real Testnet records** (`proof.ts`): the contract, one settled and one claimed cash out,
+  each linking to Stellar Expert. `npm run proof:verify` checks every hash against Horizon (it succeeded, when it
+  closed, that it called this contract with the expected function and protection). Testnet is reset from time to time:
+  when that happens the command fails, and the records must be replaced with a fresh run — never left as dead links.
+- **The hero is product-first.** `HeroVisual.tsx` draws a protected cash out from the app's own components (Card,
+  StatusBadge, Amount, SummaryRow, TimelineCompact) — never a screenshot — with the settlement line in miniature inside
+  the bank-payout card. Its layers sit on the card's padding, never its content (tested).
+- **Tests:** `npm test` (copy, claims, proof format, the scene's timing) and `npm run landing` (real Chrome: what is on
+  screen, links, overflow at six widths, the pinned scene at five scroll positions, phone layout, reduced motion, the
+  keyboard, and text contrast measured on every piece of text). Screenshots go to `tools/landing/out/` (git-ignored).

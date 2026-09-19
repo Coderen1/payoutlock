@@ -1,0 +1,188 @@
+/* The landing page's one custom visual: the settlement line.
+ *
+ * A single anatomy (a chain segment, the gap, an end node, and a protection band under the gap) driven by three
+ * numbers between 0 and 1, so the same markup can be scrubbed by scrolling (the settlement-gap panel) or simply sit
+ * finished (reduced motion):
+ *
+ *   --chain  the on-chain segment drawing                --gp    the gap drawing
+ *   --band   the protection band drawing under the gap
+ *
+ * They default to 1 (finished). Registered with @property so they are typed numbers. Everything here is
+ * scoped to .pl-line, and sits in the components layer so Tailwind utilities still win. */
+
+@property --chain { syntax: "<number>"; inherits: true; initial-value: 1; }
+@property --gp { syntax: "<number>"; inherits: true; initial-value: 1; }
+@property --band { syntax: "<number>"; inherits: true; initial-value: 1; }
+
+@layer components {
+  .pl-line {
+    --cz: 16%; /* the on-chain segment's share of the line */
+    --pl-gap-rail: var(--color-amber-600);
+    --pl-gap-ink: var(--color-amber-700); /* text on the light canvas */
+    --pl-seal-ink: var(--color-seal-700);
+    --pl-tick: color-mix(in oklab, var(--foreground) 32%, transparent);
+    position: relative;
+    color: var(--foreground);
+  }
+  [data-tone="night"] .pl-line {
+    --pl-gap-ink: var(--color-amber-600);
+    --pl-seal-ink: var(--color-seal-400);
+  }
+
+  .pl-line [data-part] { position: absolute; }
+  .pl-line [data-part="node"] { width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 9999px; }
+  .pl-line [data-part="dot"] {
+    width: 10px;
+    height: 10px;
+    margin: -5px 0 0 -5px;
+    border-radius: 9999px;
+    /* amber while the money waits unprotected, seal once the band is in place */
+    color: color-mix(in oklab, var(--color-seal-400) calc(var(--band, 1) * 100%), var(--color-amber-600));
+    background: currentColor;
+    box-shadow:
+      0 0 0 5px color-mix(in oklab, currentColor 20%, transparent),
+      0 0 22px 2px color-mix(in oklab, currentColor 45%, transparent);
+    opacity: clamp(0, calc(var(--chain, 1) * 10), 1);
+  }
+  .pl-line [data-part="band"] {
+    border-radius: 9999px;
+    background: var(--gradient-seal);
+    opacity: clamp(0, calc(var(--band, 1) * 5), 1);
+    box-shadow: 0 8px 30px -6px color-mix(in oklab, var(--color-seal-400) calc(var(--band, 1) * 55%), transparent);
+  }
+  .pl-line [data-part="bracket"] {
+    border: 0 solid color-mix(in oklab, var(--color-seal-400) 42%, transparent);
+    opacity: clamp(0, calc((var(--band, 1) - 0.3) * 1.6), 1);
+  }
+  .pl-line [data-node="start"] { background: var(--foreground); opacity: clamp(0, calc(var(--chain, 1) * 12), 1); }
+  .pl-line [data-node="mid"] {
+    border: 2px solid var(--foreground);
+    background: var(--background);
+    opacity: clamp(0, calc((var(--chain, 1) - 0.88) * 9), 1);
+  }
+  .pl-line [data-node="end"] {
+    border: 2px solid var(--pl-gap-rail);
+    background: var(--background);
+    opacity: clamp(0, calc((var(--gp, 1) - 0.88) * 9), 1);
+  }
+  .pl-line [data-label="start"] { opacity: clamp(0, calc(var(--chain, 1) * 4), 1); }
+  .pl-line [data-label="end"] { opacity: clamp(0, calc((var(--gp, 1) - 0.6) * 3), 1); }
+  .pl-line [data-label="gap"] { opacity: clamp(0, calc((var(--gp, 1) - 0.25) * 3), 1); }
+  .pl-line [data-label="band"] { opacity: clamp(0, calc((var(--band, 1) - 0.5) * 2.2), 1); }
+
+  /* ---- horizontal ------------------------------------------------------------------------------ */
+  .pl-line[data-orient="h"] { --ry: 5.75rem; --label-y: 3.5rem; --band-y: 3.4rem; --below: 3.1rem; height: calc(var(--ry) + var(--band-y) + var(--below)); }
+  .pl-line[data-orient="h"][data-size="compact"] { --ry: 3.9rem; --label-y: 3.2rem; --band-y: 2.9rem; --below: 2.2rem; }
+
+  [data-orient="h"] [data-part="chain"] {
+    top: var(--ry); left: 0; width: var(--cz); height: 2px; margin-top: -1px;
+    background: var(--foreground);
+    transform-origin: 0 50%;
+    transform: scaleX(var(--chain, 1));
+  }
+  [data-orient="h"] [data-part="gap"] {
+    top: var(--ry); left: var(--cz); right: 0; height: 2px; margin-top: -1px;
+    background: repeating-linear-gradient(90deg, var(--pl-gap-rail) 0 6px, transparent 6px 13px);
+    clip-path: inset(0 calc((1 - var(--gp, 1)) * 100%) 0 0);
+  }
+  [data-orient="h"] [data-part="ticks"] {
+    top: calc(var(--ry) + 0.55rem); left: var(--cz); right: 0; height: 7px;
+    background: repeating-linear-gradient(90deg, var(--pl-tick) 0 1px, transparent 1px 26px);
+    clip-path: inset(0 calc((1 - var(--gp, 1)) * 100%) 0 0);
+  }
+  [data-orient="h"] [data-part="node"] { top: var(--ry); }
+  [data-orient="h"] [data-node="start"] { left: 0; }
+  [data-orient="h"] [data-node="mid"] { left: var(--cz); }
+  [data-orient="h"] [data-node="end"] { left: 100%; }
+  [data-orient="h"] [data-part="dot"] { top: var(--ry); left: calc(var(--chain, 1) * var(--cz) + var(--gp, 1) * 42%); }
+  [data-orient="h"] [data-part="band"] {
+    top: calc(var(--ry) + var(--band-y)); left: var(--cz); right: 0; height: 6px; margin-top: -3px;
+    transform-origin: 50% 50%;
+    transform: scaleX(var(--band, 1));
+  }
+  [data-orient="h"] [data-part="bracket"] {
+    top: calc(var(--ry) + 0.6rem); left: var(--cz); right: 0; height: calc(var(--band-y) - 0.6rem);
+    border-left-width: 1px; border-right-width: 1px;
+  }
+  [data-orient="h"] [data-label="start"] { top: calc(var(--ry) - var(--label-y)); left: 0; text-align: left; }
+  [data-orient="h"] [data-label="end"] { top: calc(var(--ry) - var(--label-y)); right: 0; text-align: right; }
+  [data-orient="h"] [data-label="gap"] { top: calc(var(--ry) - 1.9rem); left: var(--cz); right: 0; text-align: center; }
+  [data-orient="h"] [data-label="band"] { top: calc(var(--ry) + var(--band-y) + 0.65rem); left: var(--cz); right: 0; text-align: center; }
+
+  /* ---- vertical (phones) ------------------------------------------------------------------------ */
+  .pl-line[data-orient="v"] { --rx: 0.875rem; height: var(--len, 26rem); }
+
+  [data-orient="v"] [data-part="chain"] {
+    left: var(--rx); top: 0; height: var(--cz); width: 2px; margin-left: -1px;
+    background: var(--foreground);
+    transform-origin: 50% 0;
+    transform: scaleY(var(--chain, 1));
+  }
+  [data-orient="v"] [data-part="gap"] {
+    left: var(--rx); top: var(--cz); bottom: 0; width: 2px; margin-left: -1px;
+    background: repeating-linear-gradient(180deg, var(--pl-gap-rail) 0 6px, transparent 6px 13px);
+    clip-path: inset(0 0 calc((1 - var(--gp, 1)) * 100%) 0);
+  }
+  [data-orient="v"] [data-part="ticks"] {
+    left: calc(var(--rx) + 0.55rem); top: var(--cz); bottom: 0; width: 7px;
+    background: repeating-linear-gradient(180deg, var(--pl-tick) 0 1px, transparent 1px 26px);
+    clip-path: inset(0 0 calc((1 - var(--gp, 1)) * 100%) 0);
+  }
+  [data-orient="v"] [data-part="node"] { left: var(--rx); }
+  [data-orient="v"] [data-node="start"] { top: 0; }
+  [data-orient="v"] [data-node="mid"] { top: var(--cz); }
+  [data-orient="v"] [data-node="end"] { top: 100%; }
+  [data-orient="v"] [data-part="dot"] { left: var(--rx); top: calc(var(--chain, 1) * var(--cz) + var(--gp, 1) * 42%); }
+  [data-orient="v"] [data-part="band"] {
+    left: calc(var(--rx) + 2.4rem); top: var(--cz); bottom: 0; width: 6px; margin-left: -3px;
+    transform-origin: 50% 0;
+    transform: scaleY(var(--band, 1));
+  }
+  [data-orient="v"] [data-part="bracket"] {
+    left: calc(var(--rx) + 0.6rem); top: var(--cz); bottom: 0; width: 1.8rem;
+    border-top-width: 1px; border-bottom-width: 1px;
+  }
+  [data-orient="v"] [data-label="start"] { top: -0.15rem; left: calc(var(--rx) + 4.25rem); }
+  [data-orient="v"] [data-label="end"] { bottom: -0.15rem; left: calc(var(--rx) + 4.25rem); }
+  [data-orient="v"] [data-label="gap"] { top: calc(var(--cz) + (100% - var(--cz)) * 0.3); left: calc(var(--rx) + 4.25rem); }
+  [data-orient="v"] [data-label="band"] { top: calc(var(--cz) + (100% - var(--cz)) * 0.3 + 1.6rem); left: calc(var(--rx) + 4.25rem); }
+}
+
+/* ---- reveal on scroll (Reveal.tsx) and the ticket's state change (Preview) ---------------------------------------- */
+@keyframes pl-state-in {
+  from { opacity: 0; transform: translateY(8px); filter: blur(3px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+@layer components {
+  [data-reveal] { transition: opacity 0.7s var(--ease-out-expo), transform 0.7s var(--ease-out-expo), filter 0.7s var(--ease-out-expo); }
+  [data-reveal="hidden"] { opacity: 0; transform: translateY(16px); filter: blur(4px); }
+  .pl-state-in { animation: pl-state-in 0.25s var(--ease-out-expo) both; }
+  @media (prefers-reduced-motion: reduce) {
+    [data-reveal="hidden"] { opacity: 1; transform: none; filter: none; }
+    .pl-state-in { animation: none; }
+  }
+}
+
+/* ---- the hero: a single staggered entrance, a restrained glow, one travelling dot --------------------------------- */
+@keyframes pl-rise {
+  from { opacity: 0; transform: translateY(14px); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+@keyframes pl-glow-in {
+  from { opacity: 0; }
+}
+@keyframes pl-travel {
+  0% { left: 31%; opacity: 0; }
+  14% { opacity: 1; }
+  86% { opacity: 1; }
+  100% { left: 94%; opacity: 0; }
+}
+@layer components {
+  .pl-rise { animation: pl-rise 0.8s var(--ease-out-expo) both; }
+  .pl-glow { animation: pl-glow-in 1.6s ease-out 0.25s both; }
+  /* at rest (and for anyone who asks for less motion) the dot waits two thirds of the way along */
+  .pl-travel { left: 66%; animation: pl-travel 3.8s cubic-bezier(0.45, 0, 0.55, 1) 1.1s infinite backwards; }
+  @media (prefers-reduced-motion: reduce) {
+    .pl-rise, .pl-glow, .pl-travel { animation: none; }
+  }
+}
