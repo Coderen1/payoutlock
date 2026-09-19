@@ -20,6 +20,7 @@ import { serverConfig } from "../config.ts";
 import { requireSession } from "../auth.ts";
 import { rateLimit } from "../rateLimit.ts";
 import { withIdempotency } from "../idempotency.ts";
+import { releaseTerminalSlotsForWallet } from "../keeper.ts";
 import { toJsonSafe } from "../json.ts";
 import {
   activeProtectionCount,
@@ -126,6 +127,7 @@ demoRoutes.post("/failure/open", async (req, res) => {
     res.status(400).json({ error: "invalid_duration" });
     return;
   }
+  await releaseTerminalSlotsForWallet(userAddress); // slots held by already-finished protections must not count
   if (activeProtectionCount(userAddress) >= serverConfig.maxActiveProtectionsPerWallet) {
     res.status(429).json({ error: "too_many_active_protections_for_wallet" });
     return;
@@ -154,6 +156,7 @@ demoRoutes.post("/refund/open", async (req, res) => {
     res.status(400).json({ error: "invalid_duration" });
     return;
   }
+  await releaseTerminalSlotsForWallet(userAddress); // slots held by already-finished protections must not count
   if (activeProtectionCount(userAddress) >= serverConfig.maxActiveProtectionsPerWallet) {
     res.status(429).json({ error: "too_many_active_protections_for_wallet" });
     return;

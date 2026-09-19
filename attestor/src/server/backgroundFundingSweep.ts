@@ -2,8 +2,8 @@
 // closed, network hiccup, etc.), this periodically re-checks every tracked
 // AwaitingFunding protection against Horizon and signs FUNDED once genuinely
 // verified — same discipline as Phase 3's eventWatcher.ts, generalized to
-// also cover the demo-opened protections. Horizon-only; never touches a
-// stored JWT (there isn't one).
+// also cover the demo-opened protections. Horizon-only: funding verification
+// never uses the anchor JWT.
 import { randomBytes } from "node:crypto";
 import { Keypair } from "@stellar/stellar-sdk";
 import { config } from "../config.ts";
@@ -16,7 +16,7 @@ const relayerKeypair = Keypair.fromSecret(config.relayerSecret);
 
 async function sweepOnce(): Promise<void> {
   for (const [hex, meta] of allProtectionMetaEntries()) {
-    if (meta.fundedAttestationSubmitted) continue;
+    if (meta.fundedAttestationSubmitted || meta.terminalObserved) continue;
     const idBytes = Buffer.from(hex, "hex");
     const record: any = await getProtection(idBytes).catch(() => null);
     if (!record || record.state?.tag !== "AwaitingFunding") continue;
@@ -66,7 +66,11 @@ async function sweepOnce(): Promise<void> {
 }
 
 export function startBackgroundFundingSweep(intervalMs = 15_000): void {
-  setInterval(() => {
+  const timer = setInterval(() => {
     sweepOnce().catch((e) => console.warn("[backgroundFundingSweep] sweep error:", e));
-  }, intervalMs).unref();
+  }, intervalMs);
+  timer.unref();
 }
+
+
+

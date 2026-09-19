@@ -13,6 +13,8 @@ import { serverConfig } from "../config.ts";
 import { requireSession } from "../auth.ts";
 import { rateLimit } from "../rateLimit.ts";
 import { withIdempotency } from "../idempotency.ts";
+import { releaseTerminalSlotsForWallet } from "../keeper.ts";
+import { dropAnchorJwt, holdAnchorJwt } from "../anchorCredentials.ts";
 import { toJsonSafe } from "../json.ts";
 import { assertSufficientProviderLiquidity, InsufficientProviderLiquidityError } from "../providerLiquidity.ts";
 import {
@@ -69,6 +71,7 @@ liveRoutes.post("/open-protection", async (req, res) => {
     return;
   }
 
+  await releaseTerminalSlotsForWallet(userAddress); // slots held by already-finished protections must not count
   if (activeProtectionCount(userAddress) >= serverConfig.maxActiveProtectionsPerWallet) {
     res.status(429).json({ error: "too_many_active_protections_for_wallet" });
     return;
@@ -77,9 +80,12 @@ liveRoutes.post("/open-protection", async (req, res) => {
   // Server never trusts client-supplied memo/amount — both are DERIVED from
   // the anchor's own JWT-scoped transaction record (Phase 5 finding: this
   // lookup is scoped to the JWT's own account, confirmed empirically — a
-  // different account's JWT gets 404, not the real record). The JWT is used
-  // here transiently and never stored or logged. This is a read-only lookup,
-  // so it happens before (and outside) the idempotency-guarded mutation.
+  // different account's JWT gets 404, not the real record). The JWT is never
+  // logged or persisted; once the protection is open it is kept in server
+  // MEMORY only, for the protection's lifetime (anchorCredentials.ts), so the
+  // keeper can check the anchor before a live protection becomes claimable.
+  // This lookup is read-only, so it happens before (and outside) the
+  // idempotency-guarded mutation.
   let anchorTx: Awaited<ReturnType<typeof sep6Transaction>>;
   try {
     anchorTx = await sep6Transaction(jwt, anchorWithdrawalId);
@@ -151,6 +157,7 @@ liveRoutes.post("/open-protection", async (req, res) => {
       collateralAmountStroops: collateralAmount,
       fundedAttestationSubmitted: false,
     });
+    holdAnchorJwt(hex, jwt);
 
     const record = await getProtection(idBytes);
     return {
@@ -243,8 +250,9 @@ liveRoutes.post("/check-funding", async (req, res) => {
   res.json({ funded: true, fundedTx: submit.sendTransactionResponse?.hash, evidence: toJsonSafe(evidence), record: toJsonSafe(updatedRecord) });
 });
 
-/** Anchor-authoritative (needs a fresh, transiently-forwarded JWT — same
- * one-time-use discipline as open-protection, never stored). */
+/** Anchor-authoritative: the anchor's own status decides. Takes the User's
+ * JWT with the request; a valid one also refreshes the copy the keeper holds in
+ * memory (anchorCredentials.ts), which is dropped once the protection ends. */
 liveRoutes.post("/check-settlement", async (req, res) => {
   const userAddress = req.session!.publicKey;
   const { jwt, anchorWithdrawalId } = req.body ?? {};
@@ -273,6 +281,7 @@ liveRoutes.post("/check-settlement", async (req, res) => {
     res.status(400).json({ error: `anchor_lookup_failed: ${e instanceof Error ? e.message : String(e)}` });
     return;
   }
+  holdAnchorJwt(hex, jwt); // the anchor just accepted it — keep the newer one if it outlives the held token
   if ((anchorTx as any).status !== "completed") {
     res.json({ settled: false, anchorStatus: (anchorTx as any).status });
     return;
@@ -303,6 +312,7 @@ liveRoutes.post("/check-settlement", async (req, res) => {
   });
   const submit = await submitAttestation(relayerKeypair, payload, signed.signature);
   untrackProtection(userAddress, hex);
+  dropAnchorJwt(hex);
   const updatedRecord = await getProtection(idBytes);
   res.json({ settled: true, settledTx: submit.sendTransactionResponse?.hash, record: toJsonSafe(updatedRecord) });
 });

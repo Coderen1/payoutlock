@@ -39,6 +39,10 @@ export interface ProtectionMeta {
   expectedMemo: string;
   collateralAmountStroops: bigint;
   fundedAttestationSubmitted: boolean;
+  /** Set by the keeper once it has read this protection in a terminal state
+   * (Settled/Refunded/Claimed/Expired) and released its wallet slot — after
+   * that nothing here needs to poll it again. */
+  terminalObserved?: boolean;
 }
 
 // anchorWithdrawalId (hex) -> metadata needed to independently verify
@@ -112,8 +116,14 @@ export function trackProtection(publicKey: string, anchorWithdrawalIdHex: string
   walletActiveProtections.set(publicKey, set);
 }
 
+/** Idempotent: releasing a slot that is already free (or was never taken) is a
+ * no-op, so every terminal-state path can call it without coordinating. */
 export function untrackProtection(publicKey: string, anchorWithdrawalIdHex: string): void {
   walletActiveProtections.get(publicKey)?.delete(anchorWithdrawalIdHex);
+}
+
+export function trackedProtectionIds(publicKey: string): string[] {
+  return [...(walletActiveProtections.get(publicKey) ?? [])];
 }
 
 // Periodic sweep of expired challenges/sessions/idempotency records so this

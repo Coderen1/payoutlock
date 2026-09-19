@@ -11,7 +11,10 @@
     "scenario-failure-claim": "DEMO_MODE=true node --experimental-strip-types src/scripts/scenarioFailureClaim.ts",
     "scenario-refund": "DEMO_MODE=true node --experimental-strip-types src/scripts/scenarioRefund.ts",
     "server": "node --experimental-strip-types src/server/index.ts",
-    "server:demo": "DEMO_MODE=true node --experimental-strip-types src/server/index.ts"
+    "server:demo": "DEMO_MODE=true node --experimental-strip-types src/server/index.ts",
+    "test": "node --experimental-strip-types --test src/server/keeperCore.test.ts src/server/anchorCredentials.test.ts",
+    "scenario-keeper": "DEMO_MODE=true node --experimental-strip-types src/scripts/scenarioKeeper.ts",
+    "scenario-keeper-live": "DEMO_MODE=true node --experimental-strip-types src/scripts/scenarioKeeperLive.ts"
   },
   "dependencies": {
     "@stellar/stellar-sdk": "^17.1.0",

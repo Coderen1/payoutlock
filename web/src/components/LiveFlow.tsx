@@ -11,8 +11,10 @@ import { explorerTxUrl, isTerminalState } from "../lib/format";
 
 /** The anchor JWT lives only in this component's state (JS memory) for the
  * lifetime of this flow — never logged, never written to localStorage/the
- * URL. It is forwarded to our backend exactly twice (open + settlement
- * check), both times transiently; our backend never stores it either. */
+ * URL. It is forwarded to our backend twice (open + settlement check). The
+ * backend never logs or persists it, but does keep it in server MEMORY for the
+ * protection's lifetime so its keeper can confirm the anchor's payout status
+ * before a live protection may become claimable (dropped at terminal state). */
 export function LiveFlow({ address }: { address: string }) {
   const [amount, setAmount] = useState("1");
   const [jwt, setJwt] = useState<string | null>(null);
