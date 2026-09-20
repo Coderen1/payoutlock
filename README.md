@@ -291,6 +291,72 @@ One protected cash-out: the integrating business pays a **protection fee**, whic
 
 ---
 
+## Where PayoutLock goes next
+
+Four stages, in order. None of this is scheduled, and none of the numbers below are known yet.
+
+### 1. From prototype to real pilot
+
+Today PayoutLock proves the mechanism on Stellar Testnet against a sandbox anchor.
+
+The next step would be a deliberately small pilot: **one** wallet or off-ramp partner, **one** stablecoin, **one** fiat corridor, **one** protection provider, and strict limits on both transaction size and capital at risk.
+
+The goal of that pilot would not be scale. It would be to measure what nobody can state today:
+
+- how often payouts actually become delayed or unresolved
+- how long collateral stays locked in practice
+- how often protection is claimed
+- what fee level is needed to compensate a protection provider for taking that risk
+- whether wallets and their users value protected cash-out enough to pay for it
+
+Every one of those is an open question. This prototype was built to make them answerable — not to answer them.
+
+### 2. Production-grade settlement monitoring
+
+This is the largest step between a hackathon prototype and real financial infrastructure.
+
+The prototype depends on an attestor that reads the anchor when it is asked, and on backend state held in memory. A production version would need:
+
+- **Persistent state** — protections that survive a restart, not an in-memory store
+- **Continuous settlement monitoring** — watched server-side, not only while a browser tab is open
+- **Anchor webhooks or direct payout-status feeds** — settlement pushed to the system, not polled by chance
+- **Multiple independent settlement data sources** — wherever a corridor offers more than one
+- **Stronger key management** — hardware-backed or threshold signing for the attestor key
+- **A contract security audit** — none has been performed
+- **Operational monitoring and incident handling** — alerting, runbooks, and a safe way to intervene
+
+Until that exists, the honest description of this system is the one in [Prototype limitations](#prototype-limitations).
+
+### 3. Multiple protection providers
+
+Today a single account supplies all collateral.
+
+A future version could support several protection providers side by side, each declaring:
+
+- available capital
+- supported corridors
+- exposure limits
+- risk parameters
+- the compensation they require
+
+PayoutLock could then route each protected cash-out to provider liquidity that is available and willing at that moment, rather than to one fixed account.
+
+### 4. A common protection layer for off-ramps
+
+The long-term goal is not to build another wallet or another anchor.
+
+It is for wallets, exchanges, remittance apps and off-ramp providers to integrate **one** protection layer that spans multiple anchors, multiple fiat corridors, multiple stablecoins and different banking rails.
+
+The person cashing out should never need to know how any of that works. They should see one thing —
+
+**Protected Cash Out**
+
+— and know that if the bank payout does not arrive and their principal is not returned, on-chain protection was already funded before they sent the stablecoin.
+
+> Today PayoutLock protects one Testnet cash-out flow. The long-term goal is to become the protection layer that wallets and off-ramps can add to stablecoin-to-bank settlement without rebuilding their payout infrastructure.
+
+---
+
 ## Tech stack
 
 | Layer | Stack |
