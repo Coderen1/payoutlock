@@ -22,6 +22,7 @@ import { cn } from "../../ui/cn";
 import { isMobileBrowser } from "./env.ts";
 import { effectiveMax } from "./liquidity.ts";
 import { MIN_ANCHOR_WITHDRAWAL, MIN_DEMO_SIMULATED, formatCapacity, validateAmount } from "./limits.ts";
+import { payoutDestination } from "./payoutDestination.ts";
 import { DEMO_SCENARIOS, SCENARIO_COPY, usesAnchor, type FlowMode, type Scenario } from "./scenario.ts";
 import { clearLastCashOut, loadLastCashOut } from "./storage.ts";
 import type { CashOutFlow } from "./useCashOutFlow.ts";
@@ -231,6 +232,7 @@ export function StartingCard({ step, anchor }: { step: "sign-in" | "secure"; anc
 export function ComposeView({ flow, mode, config, configError }: { flow: CashOutFlow; mode: FlowMode; config: AppConfig | null; configError: string | null }) {
   const scenario = flow.scenario;
   const anchor = usesAnchor(scenario);
+  const destination = payoutDestination(mode);
   const min = anchor ? MIN_ANCHOR_WITHDRAWAL : MIN_DEMO_SIMULATED;
   const [amount, setAmount] = useState(scenario === "failure" || scenario === "refund" ? "0.5" : "1");
   const mobile = isMobileBrowser();
@@ -322,6 +324,9 @@ export function ComposeView({ flow, mode, config, configError }: { flow: CashOut
               ) : (
                 <span className="inline-flex items-center gap-1.5 text-muted-foreground"><Landmark aria-hidden className="size-4" /> Simulated</span>
               )}
+            </SummaryRow>
+            <SummaryRow label={destination.label} hint={destination.hint}>
+              <span className="whitespace-nowrap font-mono">{destination.value}</span>
             </SummaryRow>
             <SummaryRow label="Protection" emphasis="protected" hint="Covered by collateral locked on Stellar">
               {amountError ? <span className="text-muted-foreground">—</span> : <Amount value={amount} currency="USDC" size="md" />}

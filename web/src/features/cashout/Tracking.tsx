@@ -9,6 +9,7 @@ import { Badge } from "../../ui/Badge";
 import { LIFECYCLE } from "../../ui/lifecycle";
 import { Button } from "../../ui/Button";
 import { Card } from "../../ui/Card";
+import { cn } from "../../ui/cn";
 import { HashChip } from "../../ui/HashChip";
 import { Notice } from "../../ui/Notice";
 import { ProofList, type ProofItem } from "../../ui/ProofList";
@@ -21,11 +22,12 @@ import { SummaryList, SummaryRow } from "../../ui/SummaryList";
 import { Timeline, TimelineCompact } from "../../ui/Timeline";
 import { WalletPrompt } from "../../ui/WalletPrompt";
 import { SetupChecklist } from "./Compose.tsx";
+import { payoutDestination } from "./payoutDestination.ts";
 import { usesAnchor, type FlowMode } from "./scenario.ts";
 import type { CashOutFlow } from "./useCashOutFlow.ts";
 import { formatCountdown, useCountdown } from "./useCountdown.ts";
 import { useQuote } from "./useQuote.ts";
-import { formatClock, formatUsdc, type NoticeKey, type View } from "./view.ts";
+import { formatClock, formatUsdc, type NoticeKey, type OutcomeSummary, type View } from "./view.ts";
 
 /** "Not found" only after the chain has stayed silent for a few seconds: right after a start, the record can take a
  * moment to appear, and that must not flash an error. Deliberately independent of the poll's own loading flag, which
@@ -169,6 +171,34 @@ function proofs(flow: CashOutFlow): ProofItem[] {
   return items;
 }
 
+/** The large mark above the headline. Red only where the bank side failed and nothing has been recovered yet;
+ * green once value is back with the person; teal for a live claim, which is a protection outcome. */
+function markState(view: View): "error" | "success" | "protected" | null {
+  if (view.bankFailed && !view.terminal) return "error";
+  if (!view.outcome || view.outcome === "expired") return null;
+  if (view.outcome === "claimed") return view.bankFailed ? "success" : "protected";
+  return "success";
+}
+
+const SUMMARY_TONE = { rose: "text-rose-700", emerald: "text-emerald-700" } as const;
+
+/** How a demo cash out ended, in four or five lines: what the bank did, what came back, and where it came from. */
+function OutcomeSummaryBlock({ summary }: { summary: OutcomeSummary }) {
+  return (
+    <div className="mt-6 rounded-card border border-border bg-muted p-5">
+      <h2 className="font-mono text-mono uppercase tracking-[0.08em] text-subtle">{summary.title}</h2>
+      <dl className="mt-3 divide-y divide-border">
+        {summary.lines.map((line) => (
+          <div key={line.label} className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-2.5 first:pt-0 last:pb-0">
+            <dt className="text-body text-muted-foreground">{line.label}</dt>
+            <dd className={cn("text-right text-body font-medium", line.tone ? SUMMARY_TONE[line.tone] : "text-foreground")}>{line.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  );
+}
+
 /** "You sent" only once a payment has been sent — before that it is what they are about to send. */
 function amountLabel(view: View): string {
   if (view.outcome === "claimed") return "Protection paid";
@@ -184,6 +214,7 @@ export function TrackingView({ flow, mode, config }: { flow: CashOutFlow; mode: 
   const [allSteps, setAllSteps] = useState(false);
   const amount = record ? formatUsdc(record.collateral_amount) : null;
   const quote = useQuote({ amount: amount ?? "1", valid: !!record && usesAnchor(flow.scenario), anchorHomeDomain: config?.anchorHomeDomain, usdcIssuer: config?.usdcIssuer });
+  const destination = payoutDestination(mode);
   const proofItems = proofs(flow);
 
   if (notFound) {
@@ -200,6 +231,7 @@ export function TrackingView({ flow, mode, config }: { flow: CashOutFlow; mode: 
   }
 
   const protectedNow = view.status === "active" || view.status === "delayed" || view.status === "available";
+  const mark = markState(view);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start">
@@ -213,8 +245,8 @@ export function TrackingView({ flow, mode, config }: { flow: CashOutFlow; mode: 
             </div>
           )}
 
-          {view.outcome && view.outcome !== "expired" && (
-            <div className="mb-5"><StatusMark state={view.outcome === "claimed" ? "protected" : "success"} size={56} /></div>
+          {mark && (
+            <div className="mb-5"><StatusMark state={mark} size={56} /></div>
           )}
           <h1 className="text-display-m text-foreground">{record ? view.title : <Skeleton className="h-9 w-56" />}</h1>
           <p className="mt-2 text-body text-muted-foreground">{view.description}</p>
@@ -241,9 +273,14 @@ export function TrackingView({ flow, mode, config }: { flow: CashOutFlow; mode: 
               <SummaryList>
                 <SummaryRow label={amountLabel(view)}>{amount && <Amount value={amount} currency="USDC" size="md" />}</SummaryRow>
                 {usesAnchor(flow.scenario) && (
-                  <SummaryRow label="You receive" loading={quote.status === "loading" && !quote.quote} hint="Indicative · sandbox rate">
-                    {quote.quote ? <Amount value={quote.quote.receive} currency="TRY" size="md" approx /> : <span className="text-muted-foreground">—</span>}
-                  </SummaryRow>
+                  <>
+                    <SummaryRow label="You receive" loading={quote.status === "loading" && !quote.quote} hint="Indicative · sandbox rate">
+                      {quote.quote ? <Amount value={quote.quote.receive} currency="TRY" size="md" approx /> : <span className="text-muted-foreground">—</span>}
+                    </SummaryRow>
+                    <SummaryRow label={destination.label} hint={destination.hint}>
+                      <span className="whitespace-nowrap font-mono">{destination.value}</span>
+                    </SummaryRow>
+                  </>
                 )}
                 <SummaryRow label="Protection" emphasis="protected" hint="Covered by collateral locked on Stellar">{amount && <Amount value={amount} currency="USDC" size="md" />}</SummaryRow>
               </SummaryList>
@@ -251,6 +288,8 @@ export function TrackingView({ flow, mode, config }: { flow: CashOutFlow; mode: 
               <div role="status" aria-label="Loading your cash out" className="grid gap-3"><Skeleton className="h-6" /><Skeleton className="h-6" /><Skeleton className="h-6" /></div>
             )}
           </div>
+
+          {view.summary && <OutcomeSummaryBlock summary={view.summary} />}
 
           {/* On phones the progress sits right under the headline; from lg up it has its own column. */}
           <div className="mt-6 lg:hidden">
